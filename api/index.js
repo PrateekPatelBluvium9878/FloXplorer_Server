@@ -1,4 +1,4 @@
-.// api/index.js
+// api/index.js
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -15,7 +15,18 @@ const getFakeAiSummary = (flowId, aiModel) => {
     console.log(`[Server] Generating FAKE summary for flow ${flowId} using ${aiModel}`);
 
     return `
-Auto-launched flow that updates the email address of related contacts when an Account's custom email field changes.`.trim();
+This flow — *Account - On Update Email - Update Related Contact Email* — 
+is triggered whenever an Account's **Email__c** field is updated.
+
+Here's what it does:
+1️⃣ It fetches all **Contacts** related to that Account.  
+2️⃣ It loops through each contact.  
+3️⃣ For each contact, it checks if the Contact's email matches the Account's updated email.  
+4️⃣ If the emails don’t match, it assigns the new Account email to the Contact and adds it to a collection.  
+5️⃣ Finally, it updates those contacts and creates a Note titled *"Email updated on related contacts"*.
+
+In short — this flow ensures that **all related contacts always have the latest email address** from the Account.
+    `.trim();
 };
 
 // FAKE intelligent replies for user’s questions
