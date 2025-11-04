@@ -17,34 +17,52 @@ const getFakeAiSummary = (flowId, aiModel) => {
     return `Auto-launched flow that updates the email address of related contacts when an Account's custom email field changes.`;
 };
 
-// FAKE intelligent replies for user’s questions
 const getFakeAiChatReply = (question, aiModel) => {
     console.log(`[Server] Generating FAKE chat reply for "${question}" using ${aiModel}`);
 
-    // Basic keyword-based mock responses for a realistic demo
-    if (/trigger|start/i.test(question)) {
-        return `The flow is triggered when the Account's **Email__c** field changes. Since it's an *after-save record-triggered flow*, it runs automatically after the record is updated.`;
+    // Normalize for easier matching
+    const q = question.toLowerCase();
+
+    if (q.includes('trigger') || q.includes('start')) {
+        return `The flow is triggered when an Account’s **Email__c** field is changed. Since it’s an *after-save record-triggered flow*, it runs automatically after the Account record is updated.`;
     }
 
-    if (/loop/i.test(question)) {
-        return `The loop, named **Loop all contacts**, iterates through all Contacts related to the Account. For each contact, it checks if the email matches the Account email before updating it.`;
+    if (q.includes('get') && q.includes('contact')) {
+        return `The **"Get related contacts"** element queries all Contact records whose **AccountId** matches the current Account. These records are then passed into the loop for processing.`;
     }
 
-    if (/update|contact/i.test(question)) {
-        return `Contacts are updated in bulk at the end of the flow using the **Update contacts with new email** element. This ensures only mismatched contacts are updated efficiently.`;
+    if (q.includes('loop')) {
+        return `The **"Loop all contacts"** element iterates through each related Contact retrieved earlier. It checks each contact’s email address against the Account’s updated **Email__c** value.`;
     }
 
-    if (/note|create/i.test(question)) {
-        return `At the end of the flow, a **Note** record is created with the title *"Email updated on related contacts"*, helping users track when changes were made.`;
+    if (q.includes('decision') || q.includes('match')) {
+        return `The decision element **"Does Contact email match with Account email?"** checks whether the Contact’s Email matches the Account’s Email__c field. If it matches, the contact is skipped. If not, the flow moves on to update the contact’s email.`;
     }
 
-    if (/error|fail/i.test(question)) {
-        return `In this demo version, there’s no explicit fault path. In a real implementation, you could add a fault connector to handle failed contact updates or note creation.`;
+    if (q.includes('assign') || q.includes('update email')) {
+        return `The **"Assign Account Email on Contact"** assignment sets the Contact’s Email field to the Account’s **Email__c** value. Then, **"Add contact to collection"** adds that contact to the update list.`;
+    }
+
+    if (q.includes('update') || q.includes('contact')) {
+        return `Contacts collected in **ContactsToBeUpdated** are bulk-updated in the **"Update contacts with new email"** element. This ensures all contacts whose emails didn’t match get updated efficiently.`;
+    }
+
+    if (q.includes('note') || q.includes('create')) {
+        return `After the update, the flow uses the **"Create Note"** element to insert a new Note record. Its **ParentId** is set to the Account Id, and its **Title** is *"Email updated on related contacts"*, serving as a log for this action.`;
+    }
+
+    if (q.includes('end') || q.includes('finish')) {
+        return `The flow ends after successfully creating the Note. At this point, all related Contacts have updated emails, and a Note record documents the change.`;
+    }
+
+    if (q.includes('error') || q.includes('fail')) {
+        return `Currently, the flow doesn’t have a fault connector configured. However, you can add one after the **Update** or **Create Note** elements to capture errors in case any record update fails.`;
     }
 
     // Default generic fallback
-    return `That’s an interesting question! Based on this flow, it primarily handles synchronizing emails between Accounts and their related Contacts.`;
+    return `This flow mainly handles synchronization of email addresses between an Account and its related Contacts using assignments, loops, and decisions.`;
 };
+
 
 // -----------------------------
 // ENDPOINT 1: Initial Summary
